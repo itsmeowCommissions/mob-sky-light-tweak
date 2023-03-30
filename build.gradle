@@ -1,0 +1,91 @@
+plugins {
+	id 'fabric-loom' version '1.1-SNAPSHOT'
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
+	id 'java'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name
+version = "${project.minecraft_version}-${project.mod_version}"
+group = project.maven_group
+
+configurations {
+	shadowImplementation
+	implementation.extendsFrom shadowImplementation
+}
+
+repositories {
+	maven {
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/"
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	shadowImplementation "me.zeroeightsix:fiber:0.23.0-SNAPSHOT"
+	modRuntimeOnly("com.terraformersmc:modmenu:4.1.2") {
+		transitive = false
+	}
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+	options.encoding = 'UTF-8'
+}
+
+java {
+	withSourcesJar()
+}
+
+jar {
+	classifier "dev"
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
+	manifest {
+		mainAttributes(
+				"Maven-Artifact": "${project.maven_group}:${project.archives_base_name}:${project.version}",
+				"Specification-Title": archivesBaseName,
+				"Specification-Vendor": "its_meow",
+				"Specification-Version": "1",
+				"Implementation-Title": archivesBaseName,
+				"Implementation-Version": "${project.mod_version}",
+				"Implementation-Vendor": "its_meow",
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+				"Built-On-Java": "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
+				"Built-On": "${project.minecraft_version}-${project.fabric_version}"
+		)
+	}
+}
+
+components.java {
+	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+		skip()
+	}
+}
+
+shadowJar {
+	classifier "shadow-dev"
+	configurations = [project.configurations.shadowImplementation]
+	relocate "io.github.fablabsmc.fablabs", "${project.maven_group}.shadow.fablabs"
+	relocate "blue.endless.jankson", "${project.maven_group}.shadow.jankson"
+}
+
+remapJar {
+	dependsOn shadowJar
+	input.set shadowJar.archiveFile.get()
+}

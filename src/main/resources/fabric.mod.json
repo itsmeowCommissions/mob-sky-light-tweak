@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "mob-sky-light-tweak",
+  "version": "${version}",
+  "name": "mob-sky-light-tweak",
+  "description": "Allows tweaking the sky light required for mobs to spawn.",
+  "authors": ["its_meow"],
+  "contact": {
+    "homepage": "https://itsmeow.dev/"
+  },
+  "license": "MIT",
+  "icon": "assets/mob-sky-light-tweak/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.itsmeow.modskylighttweak.ModSkyLightTweak"]
+  },
+  "mixins": ["mob-sky-light-tweak.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.14.18",
+    "minecraft": "~1.19.2",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
